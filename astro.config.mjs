@@ -29,7 +29,7 @@ import vercel from "@astrojs/vercel";
 
 // https://astro.build/config
 export default defineConfig({
-  site: "https://cubeyond.net/",
+  site: "https://sceace.net/",
   base: "/",
   trailingSlash: "always",
 
