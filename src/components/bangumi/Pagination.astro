@@ -1,0 +1,202 @@
+---
+import { Icon } from "astro-icon/components";
+
+interface Props {
+	totalItems: number;
+	itemsPerPage: number;
+	currentPage: number;
+	sectionId: string;
+}
+
+const { totalItems, itemsPerPage, currentPage, sectionId } = Astro.props;
+const totalPages = Math.ceil(totalItems / itemsPerPage);
+
+const HIDDEN = -1;
+
+function generatePageNumbers(current: number, total: number) {
+	const ADJ_DIST = 2;
+	const VISIBLE = ADJ_DIST * 2 + 1;
+	let count = 1;
+	let l = current;
+	let r = current;
+
+	while (0 < l - 1 && r + 1 <= total && count + 2 <= VISIBLE) {
+		count += 2;
+		l--;
+		r++;
+	}
+	while (0 < l - 1 && count < VISIBLE) {
+		count++;
+		l--;
+	}
+	while (r + 1 <= total && count < VISIBLE) {
+		count++;
+		r++;
+	}
+
+	const pages: (number | typeof HIDDEN)[] = [];
+	if (l > 1) pages.push(1);
+	if (l === 3) pages.push(2);
+	if (l > 3) pages.push(HIDDEN);
+	for (let i = l; i <= r; i++) pages.push(i);
+	if (r < total - 2) pages.push(HIDDEN);
+	if (r === total - 2) pages.push(total - 1);
+	if (r < total) pages.push(total);
+
+	return pages;
+}
+
+const pageNumbers = generatePageNumbers(currentPage, totalPages);
+---
+
+{totalPages > 1 && (
+	<div class="flex flex-row gap-3 justify-center collections-pagination" data-pagination-section={sectionId}>
+		<!-- 上一页 -->
+		<button
+			type="button"
+			class:list={["btn-card overflow-hidden rounded-lg text-[var(--primary)] w-11 h-11 transition-all active:scale-90",
+				{"disabled opacity-50 cursor-not-allowed pointer-events-none": currentPage === 1}
+			]}
+			data-page-btn="prev"
+			aria-label="Previous Page"
+		>
+			<Icon name="material-symbols:chevron-left-rounded" class="text-[1.75rem] pointer-events-none" />
+		</button>
+
+		<!-- 页码容器 -->
+		<div class="bg-[var(--card-bg)] flex flex-row rounded-lg items-center text-neutral-700 dark:text-neutral-300 font-bold" data-page-numbers-container>
+			{pageNumbers.map((p) => {
+				if (p === HIDDEN)
+					return <Icon name="material-symbols:more-horiz" class="mx-1 text-gray-500 dark:text-gray-400" />;
+				if (p === currentPage)
+					return (
+						<div class="h-11 w-11 rounded-lg bg-[var(--primary)] flex items-center justify-center font-bold text-white dark:text-black/70 shadow-sm">
+							{p}
+						</div>
+					);
+				return (
+					<button
+						type="button"
+						class="btn-card w-11 h-11 rounded-lg overflow-hidden active:scale-90 transition-all flex items-center justify-center"
+						data-page-btn={p}
+						aria-label={`Page ${p}`}
+					>
+						{p}
+					</button>
+				);
+			})}
+		</div>
+
+		<!-- 下一页 -->
+		<button
+			type="button"
+			class:list={["btn-card overflow-hidden rounded-lg text-[var(--primary)] w-11 h-11 transition-all active:scale-90",
+				{"disabled opacity-50 cursor-not-allowed pointer-events-none": currentPage === totalPages}
+			]}
+			data-page-btn="next"
+			aria-label="Next Page"
+		>
+			<Icon name="material-symbols:chevron-right-rounded" class="text-[1.75rem] pointer-events-none" />
+		</button>
+	</div>
+)}
+
+<script define:vars={{ itemsPerPage, sectionId, HIDDEN }}>
+	(function() {
+		const pagination = document.querySelector(`.collections-pagination[data-pagination-section="${sectionId}"]`);
+		if (!pagination) return;
+
+		let currentPage = 1;
+
+		// 事件委托：处理所有分页按钮点击
+		pagination.addEventListener('click', (e) => {
+			const btn = e.target.closest('[data-page-btn]');
+			if (!btn) return;
+
+			const action = btn.dataset.pageBtn;
+			const items = document.querySelectorAll(`[data-item-section="${sectionId}"]:not(.hidden)`);
+			const totalPages = Math.ceil(items.length / itemsPerPage);
+
+			if (action === 'prev') {
+				if (currentPage > 1) currentPage--;
+			} else if (action === 'next') {
+				if (currentPage < totalPages) currentPage++;
+			} else {
+				currentPage = parseInt(action);
+			}
+
+			updateUI(totalPages);
+		});
+
+		// 监听来自 FilterControls 的更新事件
+		pagination.addEventListener('updatePagination', () => {
+			currentPage = 1;
+			const items = document.querySelectorAll(`[data-item-section="${sectionId}"]:not(.hidden)`);
+			updateUI(Math.ceil(items.length / itemsPerPage));
+		});
+
+		function updateUI(totalPages) {
+			const items = document.querySelectorAll(`[data-item-section="${sectionId}"]:not(.hidden)`);
+			const allItemsInSection = document.querySelectorAll(`[data-item-section="${sectionId}"]`);
+
+			// 1. 切换项目的显示状态
+			allItemsInSection.forEach(item => item.style.display = 'none');
+			const start = (currentPage - 1) * itemsPerPage;
+			const end = start + itemsPerPage;
+			for (let i = start; i < end && i < items.length; i++) {
+				items[i].style.display = 'block';
+			}
+
+			// 2. 更新前后翻页按钮的状态
+			const prevBtn = pagination.querySelector('[data-page-btn="prev"]');
+			const nextBtn = pagination.querySelector('[data-page-btn="next"]');
+
+			if (prevBtn) {
+				const isFirst = currentPage === 1;
+				prevBtn.classList.toggle('opacity-50', isFirst);
+				prevBtn.classList.toggle('pointer-events-none', isFirst);
+				prevBtn.classList.toggle('disabled', isFirst);
+			}
+
+			if (nextBtn) {
+				const isLast = currentPage === totalPages || totalPages === 0;
+				nextBtn.classList.toggle('opacity-50', isLast);
+				nextBtn.classList.toggle('pointer-events-none', isLast);
+				nextBtn.classList.toggle('disabled', isLast);
+			}
+
+			// 3. 动态重新渲染中间的页码 (保持主题样式)
+			const container = pagination.querySelector('[data-page-numbers-container]');
+			if (container) {
+				const pages = generatePageNumbersJS(currentPage, totalPages);
+				container.innerHTML = pages.map(p => {
+					if (p === HIDDEN) return `<div class="mx-1 flex items-center justify-center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-gray-500 opacity-50"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg></div>`;
+					if (p === currentPage) return `<div class="h-11 w-11 rounded-lg bg-[var(--primary)] flex items-center justify-center font-bold text-white dark:text-black/70 shadow-sm transition-all">${p}</div>`;
+					return `<button type="button" class="btn-card w-11 h-11 rounded-lg overflow-hidden active:scale-90 transition-all flex items-center justify-center" data-page-btn="${p}">${p}</button>`;
+				}).join('');
+			}
+		}
+
+		// JS 端页码逻辑：与 Astro 端完全同步
+		function generatePageNumbersJS(current, total) {
+			const ADJ_DIST = 2; const VISIBLE = ADJ_DIST * 2 + 1;
+			let count = 1; let l = current; let r = current;
+			while (0 < l - 1 && r + 1 <= total && count + 2 <= VISIBLE) { count += 2; l--; r++; }
+			while (0 < l - 1 && count < VISIBLE) { count++; l--; }
+			while (r + 1 <= total && count < VISIBLE) { count++; r++; }
+			const pages = [];
+			if (l > 1) pages.push(1);
+			if (l === 3) pages.push(2);
+			if (l > 3) pages.push(HIDDEN);
+			for (let i = l; i <= r; i++) pages.push(i);
+			if (r < total - 2) pages.push(HIDDEN);
+			if (r === total - 2) pages.push(total - 1);
+			if (r < total) pages.push(total);
+			return pages;
+		}
+
+		// 初始调用一次以确保状态正确
+		const initialItems = document.querySelectorAll(`[data-item-section="${sectionId}"]:not(.hidden)`);
+		updateUI(Math.ceil(initialItems.length / itemsPerPage));
+	})();
+</script>
