@@ -53,7 +53,7 @@ export const navBarConfig: NavBarConfig = {
 
 export const profileConfig: ProfileConfig = {
   avatar:
-    "https://cdn.cubeyond.net/gh/CuB3y0nd/picx-images-hosting@master/.6bhhs4m1zp.avif",
+    "https://github.com/SceAce/picx-images-hosting/raw/master/UID.6wr9q56fry.webp",
   name: "Source",
   bio: "尋蹤流跡漸芙蓉，淺向紅虹映影空",
   links: [
