@@ -18,12 +18,12 @@ export const siteConfig: SiteConfig = {
   },
   banner: {
     enable: true,
-    src: "https://cdn.cubeyond.net/gh/CuB3y0nd/picx-images-hosting@master/.1lc58276dr.avif",
+    src: "https://cdn.jsdelivr.net/gh/SceAce/picx-images-hosting@master/burning_cherry.3yezms7b6m.jpeg",
     position: "center",
     credit: {
       enable: true,
       text: "一點浩然氣，千裏快哉風",
-      url: "https://www.pixiv.net/en/artworks/110056120",
+      url: "https://cdn.jsdelivr.net/gh/SceAce/picx-images-hosting@master/Fantasy---Sunset.77e3jfdnyp.webp",
     },
   },
   toc: {
@@ -43,17 +43,12 @@ export const navBarConfig: NavBarConfig = {
     LinkPreset.Friends,
     LinkPreset.About,
     LinkPreset.Collections,
-    {
-      name: "Memos",
-      url: "https://memos.cubeyond.net/",
-      external: true,
-    },
   ],
 };
 
 export const profileConfig: ProfileConfig = {
   avatar:
-    "https://github.com/SceAce/picx-images-hosting/raw/master/UID.6wr9q56fry.webp",
+    "https://cdn.jsdelivr.net/gh/SceAce/picx-images-hosting@master/UID.6wr9q56fry.webp",
   name: "Source",
   bio: "尋蹤流跡漸芙蓉，淺向紅虹映影空",
   links: [
@@ -63,14 +58,14 @@ export const profileConfig: ProfileConfig = {
       url: "https://www.sceace.net",
     },
     {
-      name: "Memos",
-      icon: "mingcute:moment-line",
-      url: "https://memos.cubeyond.net",
+      name: "BilBili",
+      icon: "simple-icons:bilibili",
+      url: "https://space.bilibili.com/1720469706?spm_id_from=333.1007.0.0",
     },
     {
       name: "GitHub",
       icon: "tabler:brand-github",
-      url: "https://github.com/CuB3y0nd",
+      url: "https://github.com/SceAce",
     },
     {
       name: "RedQueen",
@@ -87,13 +82,12 @@ export const licenseConfig: LicenseConfig = {
 };
 
 export const expressiveCodeConfig: ExpressiveCodeConfig = {
-  // Note: Some styles (such as background color) are being overridden, see the astro.config.mjs file.
   themes: ["catppuccin-latte", "catppuccin-macchiato"],
 };
 
 export const commentConfig: CommentConfig = {
   giscus: {
-    repo: "CuB3y0nd/assembly.rip",
+    repo: "SceAce/assembly.rip",
     repoId: "R_kgDOOGUE-g",
     category: "Announcements",
     categoryId: "DIC_kwDOOGUE-s4C0V7E",
@@ -103,7 +97,7 @@ export const commentConfig: CommentConfig = {
     emitMetadata: "1",
     inputPosition: "top",
     theme: "reactive",
-    lang: "en",
+    lang: "zh-CN",
     loading: "lazy",
   },
 };

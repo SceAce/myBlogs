@@ -62,6 +62,9 @@ importers:
       '@iconify-json/mingcute':
         specifier: ^1.2.5
         version: 1.2.6
+      '@iconify-json/simple-icons':
+        specifier: ^1.2.71
+        version: 1.2.71
       '@iconify-json/tabler':
         specifier: ^1.2.23
         version: 1.2.23
@@ -1145,6 +1148,9 @@ packages:
 
   '@iconify-json/mingcute@1.2.6':
     resolution: {integrity: sha512-mXvLsBgsZz9jiAUKtU+EHsD5/tLzWAHQ0z0Qk255NjUnZqtbmIhSNoUHq59tO776K2Q48A4D+Y3LYce2niY3CQ==}
+
+  '@iconify-json/simple-icons@1.2.71':
+    resolution: {integrity: sha512-rNoDFbq1fAYiEexBvrw613/xiUOPEu5MKVV/X8lI64AgdTzLQUUemr9f9fplxUMPoxCBP2rWzlhOEeTHk/Sf0Q==}
 
   '@iconify-json/tabler@1.2.23':
     resolution: {integrity: sha512-Knb8ykgMwB5uSoqrDv1xIdJYM03OP06OXjN6QvGXaTNtdHkW9ciKA+aftz6lwM2jwJA+bsUWeDzLBlPt2uJm4w==}
@@ -6865,6 +6871,10 @@ snapshots:
       '@iconify/types': 2.0.0
 
   '@iconify-json/mingcute@1.2.6':
+    dependencies:
+      '@iconify/types': 2.0.0
+
+  '@iconify-json/simple-icons@1.2.71':
     dependencies:
       '@iconify/types': 2.0.0
 
