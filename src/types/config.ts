@@ -95,7 +95,14 @@ export type ExpressiveCodeConfig = {
 };
 
 export type CommentConfig = {
+	enabled?: boolean;
 	giscus?: GiscusConfig;
+	notice?: {
+		title: string;
+		description: string;
+		linkText?: string;
+		linkUrl?: string;
+	};
 };
 
 type GiscusConfig = {

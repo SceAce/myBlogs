@@ -86,11 +86,12 @@ export const expressiveCodeConfig: ExpressiveCodeConfig = {
 };
 
 export const commentConfig: CommentConfig = {
+	enabled: true,
 	giscus: {
-		repo: "SceAce/assembly.rip",
-		repoId: "R_kgDOOGUE-g",
+		repo: "SceAce/myBlogs",
+		repoId: "R_kgDORa0Z8g",
 		category: "Announcements",
-		categoryId: "DIC_kwDOOGUE-s4C0V7E",
+		categoryId: "DIC_kwDORa0Z8s4C3dSS",
 		mapping: "title",
 		strict: "0",
 		reactionsEnabled: "1",
