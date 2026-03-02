@@ -89,6 +89,27 @@ prompt_with_default() {
 	typeset -g "$var_name=$input"
 }
 
+prompt_existing_post_action() {
+	local target_label="$1"
+
+	echo -e "${YELLOW}文章已存在: $target_label${NC}"
+	echo -e "${YELLOW}请选择操作 [o=覆盖 / n=另存为新文章 / c=取消]（默认: o）:${NC}"
+
+	local input=""
+	read input
+	input="${input:l}"
+	[[ -z "$input" ]] && input="o"
+
+	case "$input" in
+		o|n|c)
+			echo "$input"
+			;;
+		*)
+			echo "o"
+			;;
+	esac
+}
+
 strip_frontmatter() {
 	local source_file="$1"
 	local target_file="$2"
@@ -367,6 +388,44 @@ commit_and_push_image_repo() {
 	fi
 }
 
+resolve_target_file() {
+	local base_target="$1"
+	local target="$base_target"
+
+	if [[ ! -f "$target" ]]; then
+		echo "$target"
+		return
+	fi
+
+	local action
+	action="$(prompt_existing_post_action "$target")"
+	case "$action" in
+		c)
+			echo -e "${YELLOW}已取消${NC}" >&2
+			exit 0
+			;;
+		o)
+			echo "$target"
+			return
+			;;
+		n)
+			local counter=1
+			local candidate=""
+			local target_dir="${target:h}"
+			local target_name="${target:t:r}"
+			local target_ext="${target:e}"
+			while true; do
+				candidate="$target_dir/${target_name}-${counter}.${target_ext}"
+				if [[ ! -f "$candidate" ]]; then
+					echo "$candidate"
+					return
+				fi
+				((counter++))
+			done
+			;;
+	esac
+}
+
 show_help() {
 	echo "用法:"
 	echo "  zsh scripts/import-local-post.zsh <markdown文件> [图片目录]"
@@ -504,12 +563,7 @@ fi
 
 commit_and_push_image_repo "$IMAGE_TARGET_REL_DIR" "add images for $ARTICLE_SLUG"
 
-TARGET_FILE="$ASTRO_POSTS_DIR/${PUBLISHED_DATE}-${ARTICLE_SLUG}.$SOURCE_EXT"
-COUNTER=1
-while [[ -f "$TARGET_FILE" ]]; do
-	TARGET_FILE="$ASTRO_POSTS_DIR/${PUBLISHED_DATE}-${ARTICLE_SLUG}-${COUNTER}.$SOURCE_EXT"
-	((COUNTER++))
-done
+TARGET_FILE="$(resolve_target_file "$ASTRO_POSTS_DIR/${PUBLISHED_DATE}-${ARTICLE_SLUG}.$SOURCE_EXT")"
 
 {
 	echo "---"
