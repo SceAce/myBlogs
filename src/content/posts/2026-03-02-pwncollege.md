@@ -3,7 +3,6 @@ title: "PwnCollege-kernel-base"
 published: 2026-03-02
 draft: false
 description: "Pwncollege的内核基础练习题"
-image: "https://cdn.jsdelivr.net/gh/SceAce/picx-images-hosting@master/blog/pwncollege/img/leave5.0-1.png"
 tags: []
 category: "二进制安全"
 lang: "zh_CN"

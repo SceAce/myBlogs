@@ -3,7 +3,7 @@ title: "kernel_base"
 published: 2026-03-02
 draft: false
 description: "内核基础"
-image: "https://cdn.jsdelivr.net/gh/SceAce/picx-images-hosting@master/blog/kernel_base/img/kernel-base-1.png"
+image: "https://cdn.jsdelivr.net/gh/SceAce/picx-images-hosting/@/master/blog/kernel_base/img/nier_2b.58hwvuzgyw.webp"
 tags:
   - "Pwn"
 category: "二进制安全"
