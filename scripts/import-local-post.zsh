@@ -268,6 +268,31 @@ if unresolved:
 PY
 }
 
+extract_first_remote_image() {
+	local body_file="$1"
+
+	python3 - "$body_file" <<'PY'
+from pathlib import Path
+import re
+import sys
+
+content = Path(sys.argv[1]).read_text(encoding="utf-8")
+
+patterns = (
+    re.compile(r'!\[[^\]]*\]\((https?://[^)\s]+)'),
+    re.compile(r'<img\b[^>]*?\bsrc=["\'](https?://[^"\']+)["\']', re.IGNORECASE),
+)
+
+for pattern in patterns:
+    match = pattern.search(content)
+    if match:
+        print(match.group(1))
+        raise SystemExit(0)
+
+print("")
+PY
+}
+
 upload_cover_image() {
 	local raw_cover_path="$1"
 	local source_dir="$2"
@@ -469,7 +494,12 @@ IMAGE_INPUT="$(upload_cover_image \
 if [[ -n "$IMAGE_INPUT" ]]; then
 	echo -e "${GREEN}✓ 封面已上传: $IMAGE_INPUT${NC}"
 else
-	echo -e "${YELLOW}未设置封面或封面路径无效，跳过封面${NC}"
+	IMAGE_INPUT="$(extract_first_remote_image "$WORK_BODY")"
+	if [[ -n "$IMAGE_INPUT" ]]; then
+		echo -e "${YELLOW}未单独设置封面，已自动使用正文第一张图作为封面: $IMAGE_INPUT${NC}"
+	else
+		echo -e "${YELLOW}未设置封面且正文中没有可用图片，跳过封面${NC}"
+	fi
 fi
 
 commit_and_push_image_repo "$IMAGE_TARGET_REL_DIR" "add images for $ARTICLE_SLUG"
