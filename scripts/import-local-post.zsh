@@ -118,11 +118,10 @@ rewrite_and_upload_images() {
 	local source_dir="$2"
 	local image_repo_target_dir="$3"
 	local cdn_base="$4"
-	local year="$5"
-	local article_slug="$6"
-	local custom_image_dir="${7:-}"
+	local article_slug="$5"
+	local custom_image_dir="${6:-}"
 
-	python3 - "$body_file" "$source_dir" "$image_repo_target_dir" "$cdn_base" "$year" "$article_slug" "$custom_image_dir" <<'PY'
+	python3 - "$body_file" "$source_dir" "$image_repo_target_dir" "$cdn_base" "$article_slug" "$custom_image_dir" <<'PY'
 from html import unescape
 from pathlib import Path
 from urllib.parse import quote
@@ -134,9 +133,8 @@ body_path = Path(sys.argv[1])
 source_dir = Path(sys.argv[2])
 image_target_dir = Path(sys.argv[3])
 cdn_base = sys.argv[4]
-year = sys.argv[5]
-article_slug = sys.argv[6]
-custom_image_dir = Path(sys.argv[7]) if sys.argv[7] else None
+article_slug = sys.argv[5]
+custom_image_dir = Path(sys.argv[6]) if sys.argv[6] else None
 
 content = body_path.read_text(encoding="utf-8")
 uploaded = {}
@@ -193,12 +191,12 @@ def upload(raw_path: str) -> str:
     if not safe_parts:
         safe_parts = [source.name]
 
-    destination = image_target_dir.joinpath(*safe_parts)
+    destination = image_target_dir / "img" / Path(*safe_parts)
     destination.parent.mkdir(parents=True, exist_ok=True)
     shutil.copy2(source, destination)
 
     encoded_path = "/".join(quote(part) for part in safe_parts)
-    url = f"{cdn_base}/blog/{year}/{article_slug}/{encoded_path}"
+    url = f"{cdn_base}/blog/{quote(article_slug)}/img/{encoded_path}"
     uploaded[raw_path] = url
     return url
 
@@ -236,11 +234,10 @@ upload_cover_image() {
 	local source_dir="$2"
 	local image_repo_target_dir="$3"
 	local cdn_base="$4"
-	local year="$5"
-	local article_slug="$6"
-	local custom_image_dir="${7:-}"
+	local article_slug="$5"
+	local custom_image_dir="${6:-}"
 
-	python3 - "$raw_cover_path" "$source_dir" "$image_repo_target_dir" "$cdn_base" "$year" "$article_slug" "$custom_image_dir" <<'PY'
+	python3 - "$raw_cover_path" "$source_dir" "$image_repo_target_dir" "$cdn_base" "$article_slug" "$custom_image_dir" <<'PY'
 from pathlib import Path
 from urllib.parse import quote
 import shutil
@@ -250,9 +247,8 @@ raw_cover_path = sys.argv[1].strip()
 source_dir = Path(sys.argv[2])
 image_target_dir = Path(sys.argv[3])
 cdn_base = sys.argv[4]
-year = sys.argv[5]
-article_slug = sys.argv[6]
-custom_image_dir = Path(sys.argv[7]) if sys.argv[7] else None
+article_slug = sys.argv[5]
+custom_image_dir = Path(sys.argv[6]) if sys.argv[6] else None
 
 if not raw_cover_path:
     print("")
@@ -282,12 +278,12 @@ if source is None:
     print("")
     raise SystemExit(0)
 
-destination = image_target_dir / "cover" / source.name
+destination = image_target_dir / "assets" / "cover" / source.name
 destination.parent.mkdir(parents=True, exist_ok=True)
 shutil.copy2(source, destination)
 
 encoded_name = quote(source.name)
-print(f"{cdn_base}/blog/{year}/{article_slug}/cover/{encoded_name}")
+print(f"{cdn_base}/blog/{quote(article_slug)}/assets/cover/{encoded_name}")
 PY
 }
 
@@ -316,6 +312,7 @@ show_help() {
 	echo "  2. 上传其中引用的本地图片到图床仓库"
 	echo "  3. 将 Markdown 图片链接替换为 jsDelivr CDN 链接"
 	echo "  4. 生成符合当前 Astro schema 的文章文件"
+	echo "  5. 图床目录结构为 blog/<slug>/img 和 blog/<slug>/assets"
 	echo ""
 	echo "示例:"
 	echo "  zsh scripts/import-local-post.zsh /tmp/post.md"
@@ -401,8 +398,7 @@ if [[ "$DRAFT_INPUT" =~ ^[Yy]$ ]]; then
 	DRAFT_VALUE="true"
 fi
 
-CURRENT_YEAR="${PUBLISHED_DATE%%-*}"
-IMAGE_TARGET_REL_DIR="blog/$CURRENT_YEAR/$ARTICLE_SLUG"
+IMAGE_TARGET_REL_DIR="blog/$ARTICLE_SLUG"
 IMAGE_TARGET_DIR="$IMAGE_REPO_LOCAL/$IMAGE_TARGET_REL_DIR"
 mkdir -p "$IMAGE_TARGET_DIR"
 
@@ -412,7 +408,6 @@ rewrite_and_upload_images \
 	"$SOURCE_DIR" \
 	"$IMAGE_TARGET_DIR" \
 	"$CDN_BASE" \
-	"$CURRENT_YEAR" \
 	"$ARTICLE_SLUG" \
 	"$CUSTOM_IMAGE_DIR"
 
@@ -423,7 +418,6 @@ IMAGE_INPUT="$(upload_cover_image \
 	"$SOURCE_DIR" \
 	"$IMAGE_TARGET_DIR" \
 	"$CDN_BASE" \
-	"$CURRENT_YEAR" \
 	"$ARTICLE_SLUG" \
 	"$CUSTOM_IMAGE_DIR")"
 

@@ -59,6 +59,16 @@ print(year)
 PY
 }
 
+delete_if_exists() {
+	local target_dir="$1"
+	if [[ -d "$target_dir" ]]; then
+		rm -rf -- "$target_dir"
+		echo -e "${GREEN}✓ 已删除图片目录${NC} $target_dir"
+	else
+		echo -e "${YELLOW}未找到对应图片目录，已跳过:${NC} $target_dir"
+	fi
+}
+
 commit_and_push_image_repo() {
 	local target_rel_dir="$1"
 	local commit_message="$2"
@@ -82,7 +92,8 @@ show_help() {
 	echo ""
 	echo "说明:"
 	echo "  1. 删除 src/content/posts 下的文章文件"
-	echo "  2. 按 blog/<year>/<slug>/ 规则删除图床仓库里的对应图片目录"
+	echo "  2. 删除图床仓库里的 blog/<slug>/ 图片目录"
+	echo "  3. 兼容删除旧规则 blog/<year>/<slug>/"
 	echo "  3. 可选提交并推送图床仓库删除"
 	echo ""
 	echo "示例:"
@@ -156,13 +167,16 @@ if [[ -z "$ARTICLE_SLUG" || -z "$PUBLISHED_YEAR" ]]; then
 	exit 1
 fi
 
-IMAGE_TARGET_REL_DIR="blog/$PUBLISHED_YEAR/$ARTICLE_SLUG"
+IMAGE_TARGET_REL_DIR="blog/$ARTICLE_SLUG"
 IMAGE_TARGET_DIR="$IMAGE_REPO_LOCAL/$IMAGE_TARGET_REL_DIR"
+LEGACY_IMAGE_TARGET_REL_DIR="blog/$PUBLISHED_YEAR/$ARTICLE_SLUG"
+LEGACY_IMAGE_TARGET_DIR="$IMAGE_REPO_LOCAL/$LEGACY_IMAGE_TARGET_REL_DIR"
 
 echo -e "${CYAN}=== 删除博客文章 ===${NC}"
 echo -e "${BLUE}文章文件:${NC} $POST_FILE"
 echo -e "${BLUE}推断 slug:${NC} $ARTICLE_SLUG"
 echo -e "${BLUE}图片目录:${NC} $IMAGE_TARGET_DIR"
+echo -e "${BLUE}旧版图片目录:${NC} $LEGACY_IMAGE_TARGET_DIR"
 
 if [[ "$ASSUME_YES" != "true" ]]; then
 	echo -e "${YELLOW}确认删除文章文件和对应图片目录? (y/N):${NC}"
@@ -176,17 +190,18 @@ fi
 rm -f -- "$POST_FILE"
 echo -e "${GREEN}✓ 已删除文章文件${NC}"
 
-if [[ -d "$IMAGE_TARGET_DIR" ]]; then
-	rm -rf -- "$IMAGE_TARGET_DIR"
-	echo -e "${GREEN}✓ 已删除图片目录${NC}"
-else
-	echo -e "${YELLOW}未找到对应图片目录，已跳过: $IMAGE_TARGET_DIR${NC}"
+delete_if_exists "$IMAGE_TARGET_DIR"
+if [[ "$LEGACY_IMAGE_TARGET_DIR" != "$IMAGE_TARGET_DIR" ]]; then
+	delete_if_exists "$LEGACY_IMAGE_TARGET_DIR"
 fi
 
 echo -e "${YELLOW}是否提交并推送图床仓库删除? (y/N):${NC}"
 read CONFIRM_PUSH
 if [[ "$CONFIRM_PUSH" =~ ^[Yy]$ ]]; then
 	commit_and_push_image_repo "$IMAGE_TARGET_REL_DIR" "delete images for $ARTICLE_SLUG"
+	if [[ "$LEGACY_IMAGE_TARGET_REL_DIR" != "$IMAGE_TARGET_REL_DIR" ]]; then
+		commit_and_push_image_repo "$LEGACY_IMAGE_TARGET_REL_DIR" "delete legacy images for $ARTICLE_SLUG"
+	fi
 else
 	echo -e "${YELLOW}已跳过图床仓库提交，你之后可以手动在 $IMAGE_REPO_LOCAL 提交${NC}"
 fi
