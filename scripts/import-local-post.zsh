@@ -34,7 +34,7 @@ require_cmd() {
 }
 
 abs_path() {
-	python3 -c 'import os,sys; print(os.path.abspath(sys.argv[1]))' "$1"
+	python3 -c 'import os,sys; print(os.path.abspath(os.path.expanduser(sys.argv[1])))' "$1"
 }
 
 slugify() {
@@ -320,7 +320,7 @@ if not raw_cover_path:
 
 
 def resolve_source(path_str: str) -> Path | None:
-    path = Path(path_str)
+    path = Path(path_str).expanduser()
     candidates = []
 
     if path.is_absolute():
