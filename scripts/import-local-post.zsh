@@ -229,6 +229,45 @@ body_path.write_text(content, encoding="utf-8")
 PY
 }
 
+check_unresolved_local_images() {
+	local body_file="$1"
+
+	python3 - "$body_file" <<'PY'
+from pathlib import Path
+import re
+import sys
+
+content = Path(sys.argv[1]).read_text(encoding="utf-8")
+
+markdown_pattern = re.compile(r'!\[[^\]]*\]\(([^)\s]+)')
+html_pattern = re.compile(r'<img\b[^>]*?\bsrc=["\']([^"\']+)["\']', re.IGNORECASE)
+
+
+def is_remote(path: str) -> bool:
+    lowered = path.lower()
+    return (
+        lowered.startswith("http://")
+        or lowered.startswith("https://")
+        or lowered.startswith("data:")
+        or lowered.startswith("#")
+        or lowered.startswith("/")
+        or lowered.startswith("mailto:")
+    )
+
+
+unresolved: list[str] = []
+for pattern in (markdown_pattern, html_pattern):
+    for match in pattern.finditer(content):
+        candidate = match.group(1)
+        if not is_remote(candidate):
+            unresolved.append(candidate)
+
+if unresolved:
+    print("\n".join(unresolved))
+    raise SystemExit(1)
+PY
+}
+
 upload_cover_image() {
 	local raw_cover_path="$1"
 	local source_dir="$2"
@@ -410,6 +449,12 @@ rewrite_and_upload_images \
 	"$CDN_BASE" \
 	"$ARTICLE_SLUG" \
 	"$CUSTOM_IMAGE_DIR"
+
+if ! UNRESOLVED_IMAGES="$(check_unresolved_local_images "$WORK_BODY" 2>/dev/null)"; then
+	echo -e "${RED}仍有未替换的本地图片路径，已停止生成文章:${NC}"
+	echo "$UNRESOLVED_IMAGES"
+	exit 1
+fi
 
 echo -e "${YELLOW}请输入封面图片路径（可留空，支持相对路径/绝对路径）:${NC}"
 read COVER_PATH_INPUT
