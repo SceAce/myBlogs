@@ -381,10 +381,34 @@ commit_and_push_image_repo() {
 
 	if ! git diff --cached --quiet -- "$target_rel_dir"; then
 		git commit -m "$commit_message"
+		git -c rebase.autoStash=true pull --rebase origin "$IMAGE_BRANCH"
 		git push origin "$IMAGE_BRANCH"
 		echo -e "${GREEN}✓ 图片已推送到图床仓库${NC}"
 	else
 		echo -e "${YELLOW}没有新的图片变更，跳过图床仓库提交${NC}"
+	fi
+}
+
+commit_and_push_blog_repo() {
+	local target_file="$1"
+	local commit_message="$2"
+	local current_branch=""
+
+	cd "$ASTRO_ROOT"
+	git add -- "$target_file"
+
+	if ! git diff --cached --quiet -- "$target_file"; then
+		git commit -m "$commit_message"
+		current_branch="$(git branch --show-current)"
+		if [[ -n "$current_branch" ]]; then
+			git -c rebase.autoStash=true pull --rebase origin "$current_branch"
+			git push origin "$current_branch"
+		else
+			git push
+		fi
+		echo -e "${GREEN}✓ 博客仓库已提交并推送${NC}"
+	else
+		echo -e "${YELLOW}博客仓库没有新的文章变更，跳过提交${NC}"
 	fi
 }
 
@@ -592,4 +616,13 @@ TARGET_FILE="$(resolve_target_file "$ASTRO_POSTS_DIR/${PUBLISHED_DATE}-${ARTICLE
 } > "$TARGET_FILE"
 
 echo -e "${GREEN}✓ 文章已生成: $TARGET_FILE${NC}"
+
+echo -e "${YELLOW}是否自动提交并推送博客仓库? (y/N):${NC}"
+read CONFIRM_BLOG_PUSH
+if [[ "$CONFIRM_BLOG_PUSH" =~ ^[Yy]$ ]]; then
+	commit_and_push_blog_repo "$TARGET_FILE" "add post: $ARTICLE_SLUG"
+else
+	echo -e "${YELLOW}已跳过博客仓库提交，你之后可以手动在 $ASTRO_ROOT 提交${NC}"
+fi
+
 echo -e "${CYAN}=== 完成 ===${NC}"
