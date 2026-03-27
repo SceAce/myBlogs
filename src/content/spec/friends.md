@@ -7,4 +7,4 @@
 | <a target='_blank' rel='noopener noreferrer' href='https://cosmic-excalibur.github.io/'>Astrageldon</a> | 很厉害的师傅，教了我非常多非常多的东西，强烈推荐！！！                             |
 | <a target='_blank' rel='noopener noreferrer' href='https://blog.fa1lsnow.com/'>Fa1lSnow</a>             | 很有实力的佬，快快教我学完堆                                                       |
 | <a target='_blank' rel='noopener noreferrer' href='https://www.cubeyond.net/'>CuB3y0nd</a>              | 心之所向，一苇以航。                                                               |
-| <a target='\_blank' rel="noreferrer noreferrer href='<https://sysnow.xyz/'>sysnow></a>                  | nepnep的大佬                                                                       |
+| <a target='\_blank' rel="noreferrer noreferrer href='<https://sysnow.xyz/'>sysnow</a>                   | nepnep的大佬                                                                       |
